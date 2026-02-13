@@ -1,8 +1,9 @@
 # Python (Backend)
-backend/env/
+backend/.venv/
 backend/__pycache__/
 backend/*.pyc
 backend/database.db
+backend/.env
 
 # JavaScript (Frontend)
 frontend/node_modules/
