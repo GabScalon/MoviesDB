@@ -1,0 +1,14 @@
+# Python (Backend)
+backend/env/
+backend/__pycache__/
+backend/*.pyc
+backend/database.db
+
+# JavaScript (Frontend)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Sistema
+.DS_Store
+Thumbs.db
