@@ -1,16 +1,19 @@
 import os
 import requests
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from dotenv import load_dotenv
 from database import db
 from models import Rating
 
 
 load_dotenv()
+basedir = os.path.abspath(os.path.dirname(__file__))
 
-app = Flask(__name__)
+app = Flask(__name__, instance_path=os.path.join(basedir, 'instance'))
+CORS(app)  #  Permite conexões de qualquer origem (CORS) para facilitar a comunicação com o frontend React.
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movie_ratings.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -101,18 +104,34 @@ def get_ratings():
 #  Exibe os detalhes do filme
 @app.route('/api/movie/<int:movie_id>', methods=['GET'])
 def get_movie_details(movie_id):
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=pt-BR"
+    url_pt = f"https://api.themoviedb.org/3/movie/{movie_id}?language=pt-BR"
     headers = {"Authorization": f"Bearer {TMDB_TOKEN}"}
     
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url_pt, headers=headers)
         response.raise_for_status()
-        response_json = response.json()
+        data = response.json()
+        
+        # Se não houver sinopse em português, busca em inglês como fallback
+        if not data.get('overview'):
+            try:
+                url_en = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
+                response_en = requests.get(url_en, headers=headers)
+                data_en = response_en.json()
+                
+                # Se achou sinopse em inglês, usa ela. Se não, deixa uma mensagem padrão.
+                if data_en.get('overview'):
+                    data['overview'] = data_en['overview']
+                else:
+                    data['overview'] = "Sinopse não disponível em Português ou Inglês."
+                    
+            except Exception as e:
+                print(f"Erro ao buscar fallback em inglês: {e}")
         
         user_rating = Rating.query.filter_by(movie_id=movie_id).first()
-        response_json['user_rating'] = user_rating.score if user_rating else None
+        data['user_rating'] = user_rating.score if user_rating else None
         
-        return jsonify(response_json)
+        return jsonify(data)
     
     except requests.exceptions.RequestException as e:
         return jsonify({"error": str(e)}), 500
