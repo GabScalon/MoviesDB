@@ -1,5 +1,6 @@
 import subprocess
 import os
+import sys
 import time
 
 
@@ -10,9 +11,20 @@ FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
 def run_project():
     print("Iniciando MoviesDB")
 
-    # shell=True permite rodar comandos como se fosse no terminal
+    if os.name == 'nt': # Windows
+        venv_python = os.path.join(BACKEND_DIR, '.venv', 'Scripts', 'python.exe')
+    else: # Mac/Linux
+        venv_python = os.path.join(BACKEND_DIR, '.venv', 'bin', 'python')
+
+    # Verifica se o arquivo existe. Se não existir, usa o global
+    if not os.path.exists(venv_python):
+        print(f"⚠️ Aviso: Não achei o venv em {venv_python}. Tentando python global...")
+        venv_python = 'python' 
+
+    print(f"Ligando o Backend usando: {venv_python}")
+    
     backend_process = subprocess.Popen(
-        ['python', 'app.py'], 
+        [venv_python, 'app.py'],
         cwd=BACKEND_DIR, 
         shell=True
     )

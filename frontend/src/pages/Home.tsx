@@ -1,4 +1,10 @@
-import { useEffect, useState, type SyntheticEvent } from "react";
+import {
+    useEffect,
+    useState,
+    useRef,
+    useCallback,
+    type SyntheticEvent,
+} from "react";
 import api from "../services/api";
 import { MovieCard, type Movie } from "../components/MovieCard";
 import { Search, Loader2 } from "lucide-react";
@@ -8,25 +14,54 @@ export function Home() {
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // Função padrão (carrega os populares)
-    async function loadPopular() {
+    // Estados do Scroll Infinito
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+
+    // useRef para evitar loops de dependência e manter o estado de loading atualizado sem disparar renderizações
+    const observer = useRef<IntersectionObserver | null>(null);
+    const loadingRef = useRef(false);
+
+    const loadPopular = useCallback(async (pageNumber = 1) => {
+        if (loadingRef.current) return;
+
+        loadingRef.current = true;
         setLoading(true);
+
         try {
-            const response = await api.get("/movies/popular");
-            setMovies(response.data.results);
+            const response = await api.get(
+                `/movies/popular?page=${pageNumber}`,
+            );
+            const newMovies = response.data.results;
+
+            if (pageNumber === 1) {
+                setMovies(newMovies);
+            } else {
+                setMovies((prev) => {
+                    const existingIds = new Set(prev.map((m) => m.id));
+                    const uniqueNewMovies = newMovies.filter(
+                        (m: Movie) => !existingIds.has(m.id),
+                    );
+                    return [...prev, ...uniqueNewMovies];
+                });
+            }
+
+            if (newMovies.length < 20) setHasMore(false);
         } catch (error) {
             console.error("Erro ao carregar populares", error);
         } finally {
+            loadingRef.current = false; // Libera para nova busca
             setLoading(false);
         }
-    }
+    }, []);
 
-    // Função que busca pelo nome
+    // Busca de Pesquisa
     async function handleSearch(e: SyntheticEvent) {
-        e.preventDefault(); // Evita recarregar a página
-
+        e.preventDefault();
         if (!searchTerm) {
-            loadPopular();
+            setPage(1);
+            setHasMore(true);
+            loadPopular(1);
             return;
         }
 
@@ -36,6 +71,7 @@ export function Home() {
                 params: { q: searchTerm },
             });
             setMovies(response.data.results);
+            setHasMore(false);
         } catch (error) {
             console.error("Erro na busca", error);
         } finally {
@@ -43,14 +79,34 @@ export function Home() {
         }
     }
 
-    // Carrega os populares assim que a página abre
+    // Efeito para buscar filmes populares quando a página ou o termo de busca mudar
     useEffect(() => {
-        loadPopular();
-    }, []);
+        if (!searchTerm) {
+            loadPopular(page);
+        }
+    }, [page, loadPopular, searchTerm]);
+
+    // O Observador
+    const lastMovieElementRef = useCallback(
+        // Chamada ao final da lista para carregar mais filmes, apenas se não estiver carregando, tiver mais filmes e não estiver em modo de busca
+        (node: HTMLDivElement) => {
+            if (loading) return;
+            if (observer.current) observer.current.disconnect();
+
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && hasMore && !searchTerm) {
+                    // Evita carregar mais se estiver em modo de busca, se o carregamento estiver em andamento ou se não houver mais filmes para carregar
+                    setPage((prevPage) => prevPage + 1);
+                }
+            });
+
+            if (node) observer.current.observe(node);
+        },
+        [loading, hasMore, searchTerm],
+    );
 
     return (
         <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
-            {/* Barra de Busca */}
             <form
                 onSubmit={handleSearch}
                 style={{ display: "flex", gap: "10px", marginBottom: "30px" }}
@@ -86,37 +142,48 @@ export function Home() {
                 </button>
             </form>
 
-            {/* Lista de Filmes */}
-            {loading ? (
-                <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '50vh' // Ocupa metade da tela verticalmente
-        }}>
-            <Loader2 
-                size={48} 
-                className="animate-spin" // Se usar Tailwind. Se não, veja abaixo.
-                style={{ animation: 'spin 1s linear infinite' }} // CSS inline para girar
-            />
-        </div>
-            ) : (
+            <div
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "20px",
+                    justifyContent: "center",
+                }}
+            >
+                {movies.map((movie, index) => {
+                    if (movies.length === index + 1) {
+                        return (
+                            <div ref={lastMovieElementRef} key={movie.id}>
+                                <MovieCard movie={movie} />
+                            </div>
+                        );
+                    } else {
+                        return <MovieCard key={movie.id} movie={movie} />;
+                    }
+                })}
+            </div>
+
+            {loading && (
                 <div
                     style={{
                         display: "flex",
-                        flexWrap: "wrap",
-                        gap: "20px",
                         justifyContent: "center",
+                        margin: "20px",
                     }}
                 >
-                    {movies.length > 0 ? (
-                        movies.map((movie) => (
-                            <MovieCard key={movie.id} movie={movie} />
-                        ))
-                    ) : (
-                        <p>Nenhum filme encontrado.</p>
-                    )}
+                    <Loader2
+                        className="animate-spin"
+                        size={30}
+                        color="#e50914"
+                        style={{ animation: "spin 1s linear infinite" }}
+                    />
                 </div>
+            )}
+
+            {!hasMore && (
+                <p style={{ textAlign: "center", marginTop: 20 }}>
+                    Você chegou ao fim da lista!
+                </p>
             )}
         </div>
     );
