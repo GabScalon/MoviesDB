@@ -86,6 +86,41 @@ def get_genres():
     except requests.exceptions.RequestException as e:
         return jsonify({"error": str(e)}), 500
 
+#  Filtra filmes por gênero, ano e popularidade (Discover)
+@app.route('/api/discover', methods=['GET'])
+def discover_movies():
+    page = request.args.get('page', 1)
+    genre_id = request.args.get('genre_id')
+    year = request.args.get('year')
+    
+    url = "https://api.themoviedb.org/3/discover/movie"
+    
+    headers = {
+        "Authorization": f"Bearer {TMDB_TOKEN}",
+        "accept": "application/json"
+    }
+    
+    params = {
+        "language": "pt-BR",
+        "sort_by": "popularity.desc",
+        "include_adult": "false",
+        "page": page
+    }
+    
+    # Só adiciona os filtros se o usuário enviou
+    if genre_id:
+        params['with_genres'] = genre_id
+    if year:
+        params['primary_release_year'] = year
+        
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+
 #  Exibe os filmes avaliados pelo usuário
 @app.route('/api/ratings', methods=['GET'])
 def get_ratings():
