@@ -1,0 +1,126 @@
+.details-container {
+    padding: 40px;
+    color: white;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    gap: 40px;
+    flex-direction: row;
+}
+
+.details-poster {
+    width: 300px;
+    border-radius: 10px;
+    height: fit-content;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.details-content {
+    flex: 1;
+}
+
+.details-title {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    line-height: 1.1;
+}
+
+.details-meta {
+    color: #aaa;
+    font-size: 1.2rem;
+}
+
+.details-overview-section {
+    margin: 30px 0;
+}
+
+.details-overview-text {
+    line-height: 1.6;
+    color: #ddd;
+    font-size: 1.1rem;
+}
+
+.rating-box {
+    background-color: #222;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 30px;
+    border: 1px solid #333;
+}
+
+.rating-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.rating-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.btn-delete {
+    background-color: transparent;
+    border: 1px solid #ff4444;
+    color: #ff4444;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.btn-delete:hover {
+    background-color: rgba(255, 68, 68, 0.1);
+}
+
+.stars-container {
+    display: flex;
+    gap: 10px;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.star-icon {
+    transition:
+        transform 0.1s,
+        fill 0.2s,
+        color 0.2s;
+}
+.star-icon:hover {
+    transform: scale(1.1);
+}
+
+.rating-feedback {
+    margin-top: 10px;
+    color: #888;
+    min-height: 24px;
+    font-size: 0.95rem;
+}
+
+/* Responsividade para Celular */
+@media (max-width: 768px) {
+    .details-container {
+        flex-direction: column;
+        padding: 20px;
+        align-items: center;
+    }
+
+    .details-poster {
+        width: 200px;
+    }
+
+    .details-title {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .details-meta {
+        text-align: center;
+        display: block;
+    }
+}

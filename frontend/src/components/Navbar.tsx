@@ -1,46 +1,33 @@
 import { Link } from "react-router-dom";
 import { Video, Star } from "lucide-react";
+import "./Navbar.css";
 
 export function Navbar() {
     return (
-        <nav
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "1rem 2rem",
-                backgroundColor: "#222",
-                color: "white",
-                alignItems: "center",
-            }}
-        >
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-                <Link
-                    to="/"
+        <nav className="navbar">
+            {/* Logo do Site */}
+            <Link to="/" className="navbar-brand">
+                <div
                     style={{
-                        color: "white",
-                        textDecoration: "none",
                         display: "flex",
-                        gap: "10px",
+                        alignItems: "center",
+                        gap: "8px",
                     }}
                 >
-                    <Video /> MoviesDB
-                </Link>
-            </div>
+                    <Video size={24} />
+                    MOVIES.DB
+                </div>
+            </Link>
 
-            <div style={{ display: "flex", gap: "20px" }}>
-                <Link to="/" style={{ color: "#ccc", textDecoration: "none" }}>
-                    Buscar Filmes
+            {/* Links de Navegação */}
+            <div className="navbar-links">
+                <Link to="/" className="nav-link">
+                    Início
                 </Link>
-                <Link
-                    to="/my-list"
-                    style={{
-                        color: "#ccc",
-                        textDecoration: "none",
-                        display: "flex",
-                        gap: "5px",
-                    }}
-                >
-                    <Star size={18} /> Minha Lista
+
+                <Link to="/my-list" className="nav-link">
+                    <Star size={18} />
+                    Minha Lista
                 </Link>
             </div>
         </nav>

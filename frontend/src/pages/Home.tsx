@@ -8,6 +8,8 @@ import {
 import api from "../services/api";
 import { MovieCard, type Movie } from "../components/MovieCard";
 import { Search, Loader2 } from "lucide-react";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import "./Home.css";
 
 export function Home() {
     const [movies, setMovies] = useState<Movie[]>([]);
@@ -54,6 +56,7 @@ export function Home() {
             setLoading(false);
         }
     }, []);
+    useDocumentTitle("Início");
 
     // Busca de Pesquisa
     async function handleSearch(e: SyntheticEvent) {
@@ -106,50 +109,21 @@ export function Home() {
     );
 
     return (
-        <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
-            <form
-                onSubmit={handleSearch}
-                style={{ display: "flex", gap: "10px", marginBottom: "30px" }}
-            >
+        <div className="home-container">
+            <form onSubmit={handleSearch} className="search-form">
                 <input
                     type="text"
                     placeholder="Busque um filme..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{
-                        flex: 1,
-                        padding: "10px",
-                        fontSize: "1rem",
-                        borderRadius: "4px",
-                        border: "1px solid #ccc",
-                    }}
+                    className="search-input"
                 />
-                <button
-                    type="submit"
-                    style={{
-                        padding: "10px 20px",
-                        cursor: "pointer",
-                        backgroundColor: "#e50914",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "5px",
-                    }}
-                >
+                <button type="submit" className="search-button">
                     <Search size={18} /> Buscar
                 </button>
             </form>
 
-            <div
-                style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "20px",
-                    justifyContent: "center",
-                }}
-            >
+            <div className="movies-grid">
                 {movies.map((movie, index) => {
                     if (movies.length === index + 1) {
                         return (
@@ -164,13 +138,7 @@ export function Home() {
             </div>
 
             {loading && (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        margin: "20px",
-                    }}
-                >
+                <div className="loader-container">
                     <Loader2
                         className="animate-spin"
                         size={30}
@@ -181,9 +149,7 @@ export function Home() {
             )}
 
             {!hasMore && (
-                <p style={{ textAlign: "center", marginTop: 20 }}>
-                    Você chegou ao fim da lista!
-                </p>
+                <p className="end-message">Você chegou ao fim da lista!</p>
             )}
         </div>
     );
