@@ -47,8 +47,13 @@ export function Home() {
                 let endpoint = "/movies/popular";
                 const params: RequestParams = { page: pageNumber };
 
-                // Se tiver filtros ativos, muda para a rota Discover
-                if (selectedGenre || selectedYear) {
+                // PRIORIDADE 1: Se houver termo de busca, usa a rota /search
+                if (searchTerm) {
+                    endpoint = "/search";
+                    params.q = searchTerm;
+                }
+                // PRIORIDADE 2: Se tiver filtros ativos, usa a rota /discover
+                else if (selectedGenre || selectedYear) {
                     endpoint = "/discover";
                     if (selectedGenre) params.genre_id = selectedGenre;
                     if (selectedYear) params.year = selectedYear;
@@ -56,6 +61,7 @@ export function Home() {
 
                 const response = await api.get(endpoint, { params });
                 const newMovies = response.data.results;
+                const totalPages = response.data.total_pages; // TMDB envia o total de páginas
 
                 if (pageNumber === 1) {
                     setMovies(newMovies);
@@ -69,7 +75,8 @@ export function Home() {
                     });
                 }
 
-                if (newMovies.length < 20) setHasMore(false);
+                // Verifica se ainda há páginas disponíveis
+                setHasMore(pageNumber < totalPages);
             } catch (error) {
                 console.error("Erro ao carregar filmes", error);
             } finally {
@@ -77,8 +84,8 @@ export function Home() {
                 setLoading(false);
             }
         },
-        [selectedGenre, selectedYear],
-    ); // Recria a função se os filtros mudarem
+        [selectedGenre, selectedYear, searchTerm],
+    );
 
     // Busca
     async function handleSearch(e: SyntheticEvent) {
@@ -87,21 +94,12 @@ export function Home() {
             resetFilters();
             return;
         }
-
-        setLoading(true);
-        setSelectedGenre("");
-        setSelectedYear("");
-
-        try {
-            const response = await api.get(`/search`, {
-                params: { q: searchTerm },
-            });
-            setMovies(response.data.results);
-            setHasMore(false);
-        } catch (error) {
-            console.error("Erro na busca", error);
-        } finally {
-            setLoading(false);
+        setPage(1);
+        setHasMore(true);
+        if (searchTerm) {
+            setSelectedGenre("");
+            setSelectedYear("");
+            loadMovies(1, true);
         }
     }
 
@@ -119,16 +117,17 @@ export function Home() {
         if (!searchTerm) {
             setPage(1);
             setHasMore(true);
-            loadMovies(1, true); // Força recarregamento
+            loadMovies(1, true);
         }
-    }, [loadMovies, searchTerm]);
+    }, [selectedGenre, selectedYear, searchTerm, loadMovies]);
 
     // Monitora Paginação (Carregar Mais)
     useEffect(() => {
-        if (page > 1 && !searchTerm) {
+        if (page > 1) {
+            // Agora ele carrega a próxima página independente de ser busca, filtro ou popular
             loadMovies(page);
         }
-    }, [page, loadMovies, searchTerm]);
+    }, [page, loadMovies]);
 
     return (
         <div className="home-container">
@@ -192,7 +191,7 @@ export function Home() {
                     />
                 )}
 
-                {!loading && hasMore && !searchTerm && (
+                {!loading && hasMore && (
                     <button
                         onClick={() => setPage((prev) => prev + 1)}
                         className="load-more-btn"

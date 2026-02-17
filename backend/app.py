@@ -38,6 +38,7 @@ TMDB_TOKEN = os.getenv("TMDB_ACCESS_TOKEN")
 @cache.cached(timeout=300, query_string=True)
 def search_movie():
     query = request.args.get('q')
+    page = request.args.get('page', 1) # Captura o parâmetro page enviado pelo front
     
     if not query:
         return jsonify({"error": "Query parameter 'q' is required"}), 400
@@ -52,7 +53,8 @@ def search_movie():
     params = {
         "query": query,
         "language": "pt-BR",
-        "include_adult": "false"
+        "include_adult": "false",
+        "page": page # Repassa a página correta para o TMDB
     }
 
     try:

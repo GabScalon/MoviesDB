@@ -42,6 +42,10 @@ Para parar a aplicação, pressione `Ctrl+C` no terminal ou rode:
 
 docker compose down
 
+### Frontend (React/Vite): Porta 80 (via Nginx).
+
+### Backend (Flask): Porta 5000.
+
 ---
 
 ## Estrutura do Projeto
