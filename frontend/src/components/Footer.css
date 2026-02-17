@@ -1,0 +1,47 @@
+.footer {
+  background-color: #000;
+  padding: 40px 20px;
+  margin-top: auto;
+  border-top: 1px solid #222;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.footer-text {
+  margin: 0;
+}
+
+.footer-author {
+  color: #e50914;
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-author:hover {
+  color: white;
+}
+
+/* Crédito obrigatório do TMDB */
+.tmdb-credit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.tmdb-logo {
+  width: 30px;
+  height: auto;
+}

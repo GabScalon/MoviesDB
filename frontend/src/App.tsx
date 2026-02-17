@@ -3,6 +3,7 @@ import { Navbar } from "./components/Navbar";
 import { Home } from "./pages/Home";
 import { MyList } from "./pages/MyList";
 import { MovieDetails } from "./pages/MovieDetails";
+import { Footer } from "./components/Footer";
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                 <Route path="/my-list" element={<MyList />} />
                 <Route path="/movie/:id" element={<MovieDetails />} />
             </Routes>
+            <Footer />
         </BrowserRouter>
     );
 }
