@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+    backend:
+        build: ./backend
+        container_name: moviesdb-backend
+        ports:
+            - "5000:5000"
+        env_file:
+            - ./backend/.env
+        volumes:
+            - ./backend/instance:/app/instance
+
+    frontend:
+        build:
+            context: ./frontend
+            # Passa a URL da API para o Vite durante o build
+            args:
+                VITE_API_URL: http://localhost:5000/api
+        container_name: moviesdb-frontend
+        ports:
+            - "80:80"
+        depends_on:
+            - backend

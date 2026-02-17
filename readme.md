@@ -1,16 +1,50 @@
 # MoviesDB
 
-## Como rodar o projeto com um único comando
+Aplicação Fullstack para listagem, busca e avaliação de filmes, utilizando a API do TMDB.
+O projeto foi dockerizado buscando garantir que rode exatamente igual em qualquer máquina.
 
-### Pré-requisitos
+## Tecnologias
 
-1. Python e Node.js instalados.
-2. Dependências instaladas:
-    - Backend: `cd backend && pip install -r requirements.txt`
-    - Frontend: `cd frontend && npm install`
+- **Frontend:** React, Vite, TypeScript, Nginx
+- **Backend:** Python, Flask, SQLAlchemy
+- **Infraestrutura:** Docker & Docker Compose
 
-### Executando
+## Pré-requisitos
 
-Na raiz do projeto, execute:
+Para rodar este projeto, você precisa ter instalado:
 
-python run.py
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Git](https://git-scm.com/)
+
+## Como rodar o projeto
+
+### 1. Configuração de Variáveis (.env)
+
+O backend precisa da sua chave de acesso do TMDB para funcionar.
+
+1. Vá até a pasta `backend`.
+2. Crie um arquivo chamado `.env` (baseado no arquivo `.env.example` existente).
+3. Adicione sua chave do TMDB no arquivo criado (caso não tenha uma, veja [como obter aqui](https://developer.themoviedb.org/docs/getting-started)):
+
+TMDB_ACCESS_TOKEN=sua_chave_aqui
+
+### 2. Executando a Aplicação
+
+Na raiz do projeto (onde está o arquivo `docker-compose.yml`), abra o terminal e execute:
+
+docker compose up --build
+
+Aguarde o build terminar. Assim que finalizar, acesse:
+
+**http://localhost**
+
+Para parar a aplicação, pressione `Ctrl+C` no terminal ou rode:
+
+docker compose down
+
+---
+
+## Estrutura do Projeto
+
+- **backend/**: API em Flask (Python 3.13)
+- **frontend/**: SPA em React (Node 18 + Nginx)
