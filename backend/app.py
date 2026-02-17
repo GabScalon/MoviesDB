@@ -5,6 +5,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from database import db
 from models import Rating
+from flask_caching import Cache
 
 
 load_dotenv()
@@ -12,6 +13,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__, instance_path=os.path.join(basedir, 'instance'))
 CORS(app)  #  Permite conexões de qualquer origem (CORS) para facilitar a comunicação com o frontend React.
+
+# Armazena até 1000 itens por padrão e limpa a cada 5 minutos (300 segundos)
+# Economiza bastante em requests!!!
+cache = Cache(config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 300})
+cache.init_app(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movie_ratings.db'
 
@@ -29,6 +35,7 @@ TMDB_TOKEN = os.getenv("TMDB_ACCESS_TOKEN")
 
 #  Busca de filmes específicos por nome na API do TMDB
 @app.route('/api/search', methods=['GET'])
+@cache.cached(timeout=300, query_string=True)
 def search_movie():
     query = request.args.get('q')
     
@@ -57,6 +64,7 @@ def search_movie():
 
 #  Busca os filmes populares na API do TMDB, principalmente para exibição na página inicial
 @app.route('/api/movies/popular', methods=['GET'])
+@cache.cached(timeout=300, query_string=True)
 def get_popular_movies():
     page = request.args.get('page', 1) # Paginação
     url = f"https://api.themoviedb.org/3/movie/popular?language=pt-BR&page={page}"
@@ -75,6 +83,7 @@ def get_popular_movies():
 
 #  Busca os gêneros de filmes para exibição no filtro da página inicial
 @app.route('/api/genres', methods=['GET'])
+@cache.cached(timeout=86400) # 86400 segundos = 24 horas
 def get_genres():
     url = "https://api.themoviedb.org/3/genre/movie/list?language=pt-BR"
     headers = {"Authorization": f"Bearer {TMDB_TOKEN}"}
@@ -88,6 +97,7 @@ def get_genres():
 
 #  Filtra filmes por gênero, ano e popularidade (Discover)
 @app.route('/api/discover', methods=['GET'])
+@cache.cached(timeout=300, query_string=True)
 def discover_movies():
     page = request.args.get('page', 1)
     genre_id = request.args.get('genre_id')

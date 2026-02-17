@@ -6,7 +6,7 @@ O projeto foi dockerizado buscando garantir que rode exatamente igual em qualque
 ## Tecnologias
 
 - **Frontend:** React, Vite, TypeScript, Nginx
-- **Backend:** Python, Flask, SQLAlchemy
+- **Backend:** Python, Flask, SQLAlchemy, Flask-Caching, SimpleCache
 - **Infraestrutura:** Docker & Docker Compose
 
 ## Pré-requisitos
