@@ -5,6 +5,13 @@ import api from "../services/api";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import "./MovieDetails.css";
 
+interface CastMember {
+    id: number;
+    name: string;
+    character: string;
+    profile_path: string | null; // Pode ser null se o ator não tiver foto
+}
+
 interface MovieDetail {
     id: number;
     title: string;
@@ -13,6 +20,9 @@ interface MovieDetail {
     vote_average: number;
     release_date: string;
     user_rating?: number;
+    credits?: {
+        cast: CastMember[];
+    };
 }
 
 export function MovieDetails() {
@@ -108,6 +118,33 @@ export function MovieDetails() {
                     <h3>Sinopse</h3>
                     <p className="details-overview-text">{movie.overview}</p>
                 </div>
+
+                {movie.credits && movie.credits.cast.length > 0 && (
+                    <div className="details-credits-section">
+                        <h3>Elenco Principal</h3>
+                        <div className="cast-list">
+                            {movie.credits.cast.slice(0, 10).map((actor) => (
+                                <div key={actor.id} className="cast-card">
+                                    {actor.profile_path ? (
+                                        <img
+                                            src={`https://image.tmdb.org/t/p/w200${actor.profile_path}`}
+                                            alt={actor.name}
+                                            className="cast-image"
+                                        />
+                                    ) : (
+                                        <div className="cast-placeholder">
+                                            👤
+                                        </div>
+                                    )}
+                                    <p className="cast-name">{actor.name}</p>
+                                    <p className="cast-character">
+                                        {actor.character}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="rating-box">
                     <div className="rating-header">

@@ -17,6 +17,11 @@
 
 .details-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    /* Impede que o flex-child expanda além do pai */
+    min-width: 0;
 }
 
 .details-title {
@@ -102,6 +107,115 @@
     font-size: 0.95rem;
 }
 
+.details-credits-section {
+    margin-top: 2rem;
+    width: 100%;
+    /* Garante que a seção não ultrapasse a largura do container pai */
+    max-width: 100%;
+}
+
+.details-credits-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #eab308;
+    padding-left: 10px;
+}
+
+.cast-list {
+    display: flex;
+    gap: 1rem;
+
+    /* Habilita o scroll horizontal */
+    overflow-x: auto;
+
+    padding-bottom: 1rem;
+
+    width: 100%;
+
+    scroll-behavior: smooth;
+
+    scrollbar-width: thin;
+    scrollbar-color: #555 #222;
+}
+
+/* Estilização da barra de rolagem (Chrome, Edge, Safari) */
+.cast-list::-webkit-scrollbar {
+    height: 8px;
+}
+
+.cast-list::-webkit-scrollbar-track {
+    background: #222;
+    border-radius: 4px;
+}
+
+.cast-list::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 4px;
+    border: 1px solid #222;
+}
+
+.cast-card {
+    flex: 0 0 auto;
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.cast-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.cast-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    border: 2px solid #ddd;
+}
+
+.cast-card:hover .cast-image {
+    transform: scale(1.05);
+    border-color: #eab308;
+}
+
+.cast-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    line-height: 1.2;
+
+    color: #f3f4f6;
+
+    min-height: 2.4em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Corta se o nome for muito longo (3 linhas ou mais) */
+    overflow: hidden;
+}
+
+.cast-character {
+    font-size: 0.8rem;
+
+    color: #9ca3af;
+
+    margin-top: 0.2rem;
+    line-height: 1.2;
+}
 /* Responsividade para Celular */
 @media (max-width: 768px) {
     .details-container {
@@ -122,5 +236,15 @@
     .details-meta {
         text-align: center;
         display: block;
+    }
+
+    .cast-image,
+    .cast-placeholder {
+        width: 60px;
+        height: 60px;
+    }
+
+    .cast-card {
+        width: 80px;
     }
 }

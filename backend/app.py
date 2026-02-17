@@ -139,7 +139,7 @@ def get_ratings():
 #  Exibe os detalhes do filme
 @app.route('/api/movie/<int:movie_id>', methods=['GET'])
 def get_movie_details(movie_id):
-    url_pt = f"https://api.themoviedb.org/3/movie/{movie_id}?language=pt-BR"
+    url_pt = f"https://api.themoviedb.org/3/movie/{movie_id}?language=pt-BR&append_to_response=credits"
     headers = {"Authorization": f"Bearer {TMDB_TOKEN}"}
     
     try:
@@ -150,7 +150,7 @@ def get_movie_details(movie_id):
         # Se não houver sinopse em português, busca em inglês como fallback
         if not data.get('overview'):
             try:
-                url_en = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
+                url_en = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US&append_to_response=credits"
                 response_en = requests.get(url_en, headers=headers)
                 data_en = response_en.json()
                 
