@@ -6,22 +6,11 @@ import {
     type SyntheticEvent,
 } from "react";
 import api from "../services/api";
-import { MovieCard, type Movie } from "../components/MovieCard";
+import { MovieCard } from "../components/MovieCard";
 import { Search, Loader2, Plus, Filter } from "lucide-react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import "./Home.css";
-
-interface Genre {
-    id: number;
-    name: string;
-}
-
-interface RequestParams {
-    page: number;
-    genre_id?: string;
-    year?: string;
-    q?: string; // Usado na busca
-}
+import { type Movie, type Genre, type RequestParams } from "../types";
 
 export function Home() {
     const [movies, setMovies] = useState<Movie[]>([]);

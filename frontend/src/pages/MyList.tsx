@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import { MovieCard, type Movie } from "../components/MovieCard";
+import { MovieCard } from "../components/MovieCard";
+import { type RatedMovie } from "../types";
 
-// Interface para representar o que vem do banco de dados.
-interface RatedMovie {
+interface BackendResponse {
     movie_id: number;
     title: string;
     poster_path: string;
@@ -11,21 +11,22 @@ interface RatedMovie {
 }
 
 export function MyList() {
-    const [movies, setMovies] = useState<Movie[]>([]);
+    const [movies, setMovies] = useState<RatedMovie[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
         api.get("/ratings")
             .then((response) => {
-                const formattedMovies: Movie[] = response.data.map(
-                    (item: RatedMovie) => ({
-                        id: item.movie_id,
-                        title: item.title,
-                        poster_path: item.poster_path,
-                        vote_average: item.score,
-                    }),
-                );
+                const rawData = response.data as BackendResponse[];
+
+                const formattedMovies: RatedMovie[] = rawData.map((item) => ({
+                    id: item.movie_id,
+                    title: item.title,
+                    poster_path: item.poster_path,
+                    vote_average: item.score,
+                    user_rating: item.score,
+                }));
                 setMovies(formattedMovies);
             })
             .catch((err) => {
@@ -38,7 +39,11 @@ export function MyList() {
     }, []);
 
     if (loading)
-        return <div style={{ padding: "20px" }}>Carregando sua lista...</div>;
+        return (
+            <div style={{ padding: "20px", color: "white" }}>
+                Carregando sua lista...
+            </div>
+        );
     if (error)
         return <div style={{ padding: "20px", color: "red" }}>{error}</div>;
 

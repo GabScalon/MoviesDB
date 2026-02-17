@@ -224,4 +224,4 @@ def delete_rating(movie_id):
 
 #  Inicia o servidor Flask
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
