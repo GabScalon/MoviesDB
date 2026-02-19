@@ -1,11 +1,15 @@
 import os
 import requests
+import jwt
+from datetime import datetime, timedelta, timezone
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 from database import db
-from models import Rating
+from models import Rating, User
 from flask_caching import Cache
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 load_dotenv()
@@ -23,6 +27,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movie_ratings.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Chave secreta para JWT, definida no arquivo .env ou, se não estiver presente, usa um valor padrão
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'mysecretkey')
+
 db.init_app(app)
 
 with app.app_context():
@@ -30,6 +37,29 @@ with app.app_context():
     db.create_all()
 
 TMDB_TOKEN = os.getenv("TMDB_ACCESS_TOKEN")
+
+### DECORATOR PARA PROTEGER ROTAS COM AUTENTICAÇÃO JWT ###
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'message': 'Token ausente!'}), 401
+        try:
+            # Remove o "Bearer " do início do token se existir
+            token = token.split(" ")[1] if " " in token else token
+            # HS256 = SHA256 + HMAC
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = User.query.filter_by(id=data['user_id']).first()
+        
+        except jwt.ExpiredSignatureError:
+            return jsonify({'message': 'Token expirado!'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'message': 'Token inválido!'}), 401
+        except Exception as e:
+            return jsonify({'message': f'Erro desconhecido no token! Mensagem de erro: {e}'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
 
 ### BUSCAS DE FILMES ###
 
@@ -135,8 +165,9 @@ def discover_movies():
 
 #  Exibe os filmes avaliados pelo usuário
 @app.route('/api/ratings', methods=['GET'])
-def get_ratings():
-    ratings = Rating.query.all()
+@token_required
+def get_ratings(current_user):
+    ratings = Rating.query.filter_by(user_id=current_user.id).all()
     output = []
     try:
         for rating in ratings:
@@ -150,7 +181,8 @@ def get_ratings():
 
 #  Exibe os detalhes do filme
 @app.route('/api/movie/<int:movie_id>', methods=['GET'])
-def get_movie_details(movie_id):
+@token_required
+def get_movie_details(movie_id, current_user):
     url_pt = f"https://api.themoviedb.org/3/movie/{movie_id}?language=pt-BR&append_to_response=credits"
     headers = {"Authorization": f"Bearer {TMDB_TOKEN}"}
     
@@ -175,7 +207,7 @@ def get_movie_details(movie_id):
             except Exception as e:
                 print(f"Erro ao buscar fallback em inglês: {e}")
         
-        user_rating = Rating.query.filter_by(movie_id=movie_id).first()
+        user_rating = Rating.query.filter_by(movie_id=movie_id, user_id=current_user.id).first()
         data['user_rating'] = user_rating.score if user_rating else None
         
         return jsonify(data)
@@ -188,14 +220,18 @@ def get_movie_details(movie_id):
 
 #  Salva a nota dada ao filme no banco de dados
 @app.route('/api/rate', methods=['POST'])
-def save_rating():
+@token_required
+def save_rating(current_user):
     data = request.json
     
     if not data or 'movie_id' not in data or 'score' not in data:
         return jsonify({"error": "Dados incompletos"}), 400
 
-    # Busca se o filme já foi avaliado antes
-    existing_rating = Rating.query.filter_by(movie_id=data['movie_id']).first()
+    # Busca se o filme já foi avaliado antes por este mesmo usuário
+    existing_rating = Rating.query.filter_by(
+        movie_id=data['movie_id'], 
+        user_id=current_user.id
+    ).first()
 
     if existing_rating:
         existing_rating.score = data['score']  # Update
@@ -204,7 +240,8 @@ def save_rating():
             movie_id=data['movie_id'],
             score=data['score'],
             title=data.get('title', 'Sem título'),
-            poster_path=data.get('poster_path', '')
+            poster_path=data.get('poster_path', ''),
+            user_id=current_user.id
         )  # Create
         db.session.add(new_rating)
 
@@ -219,8 +256,9 @@ def save_rating():
 
 #  Deleta a avaliação do filme no banco de dados
 @app.route('/api/rate/<int:movie_id>', methods=['DELETE'])
-def delete_rating(movie_id):
-    rating = Rating.query.filter_by(movie_id=movie_id).first()
+@token_required
+def delete_rating(movie_id, current_user):
+    rating = Rating.query.filter_by(movie_id=movie_id, user_id=current_user.id).first()
     
     if not rating:
         return jsonify({"error": "Avaliação não encontrada"}), 404
@@ -233,6 +271,37 @@ def delete_rating(movie_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Erro ao deletar avaliação: {str(e)}"}), 500
+    
+
+###  AUTENTICAÇÃO DE USUÁRIO  ###
+
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.json
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({'message': 'Usuário já existe!'}), 400
+    
+    new_user = User(username=data['username'])
+    new_user.set_password(data['password'])
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': 'Registrado com sucesso!'}), 201
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    user = User.query.filter_by(username=data['username']).first()
+    
+    if user and user.check_password(data['password']):
+        token = jwt.encode({
+            'user_id': user.id,
+            'exp': datetime.now(timezone.utc) + timedelta(hours=24)
+        }, app.config['SECRET_KEY'], algorithm="HS256")
+        return jsonify({'token': token})
+    
+    return jsonify({'message': 'Credenciais inválidas!'}), 401
+
 
 #  Inicia o servidor Flask
 if __name__ == '__main__':

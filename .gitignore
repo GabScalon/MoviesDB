@@ -7,8 +7,9 @@ Desktop.ini
 # --- Banco de dados---
 *.db
 *.sqlite3
-backend/instance/
+**/instance/
 instance/
+backend/instance/
 
 # --- env ---
 .env
