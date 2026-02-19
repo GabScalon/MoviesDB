@@ -30,6 +30,8 @@ TMDB_ACCESS_TOKEN=sua_chave_aqui
 
 ### 2. Executando a Aplicação
 
+Primeiro, tenha certeza que o seu ambiente Docker está aberto e rodando.
+
 Na raiz do projeto (onde está o arquivo `docker-compose.yml`), abra o terminal e execute:
 
 docker compose up --build
@@ -42,9 +44,9 @@ Para parar a aplicação, pressione `Ctrl+C` no terminal ou rode:
 
 docker compose down
 
-### Frontend (React/Vite): Porta 80 (via Nginx).
+##### - Frontend (React/Vite): Porta 80 (via Nginx).
 
-### Backend (Flask): Porta 5000.
+##### - Backend (Flask): Porta 5000.
 
 ---
 
