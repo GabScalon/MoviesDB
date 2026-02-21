@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, Trash2, Loader2 } from "lucide-react";
+import { Star, Trash2, Loader2, ArrowLeft } from "lucide-react";
 import api from "../services/api";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import "./MovieDetails.css";
@@ -114,100 +114,136 @@ export function MovieDetails() {
     }
 
     return (
-        <div className="details-container">
-            {/* Poster do filme */}
-            <img
-                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                alt={movie.title}
-                className="details-poster"
-            />
-            {/* Informações e Avaliação */}
-            <div className="details-content">
-                <h1 className="details-title">{movie.title}</h1>
-                <p className="details-meta">
-                    Lançamento: {movie.release_date} | Média Geral:{" "}
-                    {movie.vote_average.toFixed(1)}
-                </p>
+        <>
+            <div
+                style={{
+                    maxWidth: "1000px",
+                    margin: "20px auto 0",
+                    padding: "0 40px",
+                }}
+            >
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        background: "none",
+                        border: "none",
+                        color: "#aaa",
+                        cursor: "pointer",
+                        fontSize: "1rem",
+                        padding: 0,
+                    }}
+                >
+                    <ArrowLeft size={20} />
+                    Voltar
+                </button>
+            </div>
+            <div className="details-container">
+                {/* Poster do filme */}
+                <img
+                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                    alt={movie.title}
+                    className="details-poster"
+                />
+                {/* Informações e Avaliação */}
+                <div className="details-content">
+                    <h1 className="details-title">{movie.title}</h1>
+                    <p className="details-meta">
+                        Lançamento: {movie.release_date} | Média Geral:{" "}
+                        {movie.vote_average.toFixed(1)}
+                    </p>
 
-                <div className="details-overview-section">
-                    <h3>Sinopse</h3>
-                    <p className="details-overview-text">{movie.overview}</p>
-                </div>
+                    <div className="details-overview-section">
+                        <h3>Sinopse</h3>
+                        <p className="details-overview-text">
+                            {movie.overview}
+                        </p>
+                    </div>
 
-                {movie.credits && movie.credits.cast.length > 0 && (
-                    <div className="details-credits-section">
-                        <h3>Elenco Principal</h3>
-                        <div className="cast-list">
-                            {movie.credits.cast.slice(0, 10).map((actor) => (
-                                <div key={actor.id} className="cast-card">
-                                    {actor.profile_path ? (
-                                        <img
-                                            src={`https://image.tmdb.org/t/p/w200${actor.profile_path}`}
-                                            alt={actor.name}
-                                            className="cast-image"
-                                        />
-                                    ) : (
-                                        <div className="cast-placeholder">
-                                            👤
+                    {movie.credits && movie.credits.cast.length > 0 && (
+                        <div className="details-credits-section">
+                            <h3>Elenco Principal</h3>
+                            <div className="cast-list">
+                                {movie.credits.cast
+                                    .slice(0, 10)
+                                    .map((actor) => (
+                                        <div
+                                            key={actor.id}
+                                            className="cast-card"
+                                        >
+                                            {actor.profile_path ? (
+                                                <img
+                                                    src={`https://image.tmdb.org/t/p/w200${actor.profile_path}`}
+                                                    alt={actor.name}
+                                                    className="cast-image"
+                                                />
+                                            ) : (
+                                                <div className="cast-placeholder">
+                                                    👤
+                                                </div>
+                                            )}
+                                            <p className="cast-name">
+                                                {actor.name}
+                                            </p>
+                                            <p className="cast-character">
+                                                {actor.character}
+                                            </p>
                                         </div>
-                                    )}
-                                    <p className="cast-name">{actor.name}</p>
-                                    <p className="cast-character">
-                                        {actor.character}
-                                    </p>
-                                </div>
+                                    ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="rating-box">
+                        <div className="rating-header">
+                            <h3>Sua Avaliação</h3>
+
+                            {myRating > 0 && (
+                                <button
+                                    onClick={handleDelete}
+                                    className="btn-delete"
+                                >
+                                    <Trash2 size={16} />
+                                    Desfazer avaliação
+                                </button>
+                            )}
+                        </div>
+
+                        <div
+                            className="stars-container"
+                            onMouseLeave={() => setHoverRating(0)}
+                        >
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                    key={star}
+                                    size={40}
+                                    className="star-icon"
+                                    fill={
+                                        star <= (hoverRating || myRating)
+                                            ? "#fbbf24"
+                                            : "none"
+                                    }
+                                    color={
+                                        star <= (hoverRating || myRating)
+                                            ? "#fbbf24"
+                                            : "gray"
+                                    }
+                                    onMouseEnter={() => setHoverRating(star)}
+                                    onClick={() => handleRate(star)}
+                                />
                             ))}
                         </div>
+
+                        <p className="rating-feedback">
+                            {myRating > 0
+                                ? `Você avaliou este filme com nota ${myRating}`
+                                : "Toque nas estrelas para avaliar"}
+                        </p>
                     </div>
-                )}
-
-                <div className="rating-box">
-                    <div className="rating-header">
-                        <h3>Sua Avaliação</h3>
-
-                        {myRating > 0 && (
-                            <button
-                                onClick={handleDelete}
-                                className="btn-delete"
-                            >
-                                <Trash2 size={16} />
-                                Desfazer avaliação
-                            </button>
-                        )}
-                    </div>
-
-                    <div
-                        className="stars-container"
-                        onMouseLeave={() => setHoverRating(0)}
-                    >
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                                key={star}
-                                size={40}
-                                className="star-icon"
-                                fill={
-                                    star <= (hoverRating || myRating)
-                                        ? "#fbbf24"
-                                        : "none"
-                                }
-                                color={
-                                    star <= (hoverRating || myRating)
-                                        ? "#fbbf24"
-                                        : "gray"
-                                }
-                                onMouseEnter={() => setHoverRating(star)}
-                                onClick={() => handleRate(star)}
-                            />
-                        ))}
-                    </div>
-
-                    <p className="rating-feedback">
-                        {myRating > 0
-                            ? `Você avaliou este filme com nota ${myRating}`
-                            : "Toque nas estrelas para avaliar"}
-                    </p>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
