@@ -3,6 +3,7 @@ import api from "../services/api";
 import { MovieCard } from "../components/MovieCard";
 import { type RatedMovie } from "../types";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { Link } from "react-router-dom";
 
 interface BackendResponse {
     movie_id: number;
@@ -12,13 +13,17 @@ interface BackendResponse {
 }
 
 export function MyList() {
+    const token = localStorage.getItem("@MoviesDB:token");
     const [movies, setMovies] = useState<RatedMovie[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!!token);
     const [error, setError] = useState("");
 
     useDocumentTitle("Lista de Filmes Avaliados");
 
     useEffect(() => {
+        if (!token) {
+            return;
+        }
         api.get("/ratings")
             .then((response) => {
                 const rawData = response.data as BackendResponse[];
@@ -39,7 +44,48 @@ export function MyList() {
             .finally(() => {
                 setLoading(false);
             });
-    }, []);
+    }, [token]);
+
+    if (!token) {
+        return (
+            <div
+                style={{
+                    padding: "40px 20px",
+                    maxWidth: "1200px",
+                    margin: "0 auto",
+                    textAlign: "center",
+                    color: "white",
+                }}
+            >
+                <h1 style={{ marginBottom: "20px" }}>Minha Lista</h1>
+                <p
+                    style={{
+                        color: "#aaa",
+                        fontSize: "1.1rem",
+                        marginBottom: "30px",
+                    }}
+                >
+                    Você precisa estar logado para salvar e visualizar seus
+                    filmes favoritos.
+                </p>
+                <Link
+                    to="/login"
+                    style={{
+                        display: "inline-block",
+                        padding: "12px 24px",
+                        backgroundColor: "#e50914",
+                        color: "white",
+                        textDecoration: "none",
+                        borderRadius: "4px",
+                        fontWeight: "bold",
+                        transition: "background-color 0.3s",
+                    }}
+                >
+                    Fazer Login ou Criar Conta
+                </Link>
+            </div>
+        );
+    }
 
     if (loading)
         return (

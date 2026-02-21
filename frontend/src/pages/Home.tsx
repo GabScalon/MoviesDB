@@ -43,6 +43,10 @@ export function Home() {
             loadingRef.current = true;
             setLoading(true);
 
+            if (isNewFilter) {
+                setMovies([]);
+            }
+
             try {
                 let endpoint = "/movies/popular";
                 const params: RequestParams = { page: pageNumber };
@@ -56,6 +60,7 @@ export function Home() {
                 else if (selectedGenre || selectedYear) {
                     endpoint = "/discover";
                     if (selectedGenre) params.genre_id = selectedGenre;
+                    //  Se o ano não tiver filmes nele, a API simplesmente retorna a lista de filmes populares.
                     if (selectedYear) params.year = selectedYear;
                 }
 
@@ -79,6 +84,8 @@ export function Home() {
                 setHasMore(pageNumber < totalPages);
             } catch (error) {
                 console.error("Erro ao carregar filmes", error);
+                if (pageNumber === 1) setMovies([]);
+                setHasMore(false);
             } finally {
                 loadingRef.current = false;
                 setLoading(false);
@@ -94,6 +101,7 @@ export function Home() {
             resetFilters();
             return;
         }
+
         setPage(1);
         setHasMore(true);
         if (searchTerm) {
@@ -112,19 +120,23 @@ export function Home() {
         setSearchTerm("");
     }
 
-    // Monitora mudanças nos filtros para recarregar a lista do zero
     useEffect(() => {
-        if (!searchTerm) {
+        // Se estiver usando a busca por texto/nome, não faz debounce automático
+        if (searchTerm) return;
+
+        const delayDebounceFn = setTimeout(() => {
             setPage(1);
             setHasMore(true);
             loadMovies(1, true);
-        }
+        }, 600);
+
+        return () => clearTimeout(delayDebounceFn);
     }, [selectedGenre, selectedYear, searchTerm, loadMovies]);
 
     // Monitora Paginação (Carregar Mais)
     useEffect(() => {
         if (page > 1) {
-            // Agora ele carrega a próxima página independente de ser busca, filtro ou popular
+            // Carrega a próxima página independente de ser busca, filtro ou popular
             loadMovies(page);
         }
     }, [page, loadMovies]);
@@ -174,6 +186,20 @@ export function Home() {
                     />
                 </div>
             </div>
+
+            {/* MENSAGEM DE 0 RESULTADOS */}
+            {!loading && movies.length === 0 && (
+                <div
+                    style={{
+                        textAlign: "center",
+                        padding: "60px 20px",
+                        color: "#aaa",
+                    }}
+                >
+                    <h2>Nenhum filme encontrado.</h2>
+                    <p>Tente ajustar o ano, gênero ou termo de busca.</p>
+                </div>
+            )}
 
             <div className="movies-grid">
                 {movies.map((movie) => (

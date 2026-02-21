@@ -23,7 +23,7 @@ CORS(app)  #  Permite conexões de qualquer origem (CORS) para facilitar a comun
 cache = Cache(config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 300})
 cache.init_app(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movie_ratings.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///moviesdb_database.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -181,8 +181,7 @@ def get_ratings(current_user):
 
 #  Exibe os detalhes do filme
 @app.route('/api/movie/<int:movie_id>', methods=['GET'])
-@token_required
-def get_movie_details(current_user, movie_id):
+def get_movie_details(movie_id):
     url_pt = f"https://api.themoviedb.org/3/movie/{movie_id}?language=pt-BR&append_to_response=credits"
     headers = {"Authorization": f"Bearer {TMDB_TOKEN}"}
     
@@ -207,8 +206,22 @@ def get_movie_details(current_user, movie_id):
             except Exception as e:
                 print(f"Erro ao buscar fallback em inglês: {e}")
         
-        user_rating = Rating.query.filter_by(movie_id=movie_id, user_id=current_user.id).first()
-        data['user_rating'] = user_rating.score if user_rating else None
+        data['user_rating'] = None
+        auth_header = request.headers.get('Authorization')
+        
+        if auth_header:
+            try:
+                # Tenta extrair o ID do usuário do token se ele foi enviado
+                token = auth_header.split(" ")[1] if " " in auth_header else auth_header
+                token_data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+                user_id = token_data['user_id']
+                
+                # Busca a nota deste usuário
+                user_rating = Rating.query.filter_by(movie_id=movie_id, user_id=user_id).first()
+                if user_rating:
+                    data['user_rating'] = user_rating.score
+            except:
+                pass # Se o token for inválido, ignora e envia a página sem nota
         
         return jsonify(data)
     

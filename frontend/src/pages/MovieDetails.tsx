@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Star, Trash2, Loader2 } from "lucide-react";
 import api from "../services/api";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -30,6 +30,7 @@ export function MovieDetails() {
     const [movie, setMovie] = useState<MovieDetail | null>(null);
     const [myRating, setMyRating] = useState<number>(0); // Estado local da nota
     const [hoverRating, setHoverRating] = useState<number>(0);
+    const navigate = useNavigate();
 
     useDocumentTitle(movie ? movie.title : "Carregando...");
 
@@ -47,6 +48,13 @@ export function MovieDetails() {
 
     async function handleRate(score: number) {
         if (!movie) return;
+
+        const token = localStorage.getItem("@MoviesDB:token");
+        if (!token) {
+            alert("Você precisa fazer login para avaliar um filme!");
+            navigate("/login");
+            return;
+        }
 
         setMyRating(score);
 
@@ -84,6 +92,13 @@ export function MovieDetails() {
 
     async function handleDelete() {
         if (!movie) return;
+
+        const token = localStorage.getItem("@MoviesDB:token");
+        if (!token) {
+            alert("Você precisa estar logado para remover uma avaliação!");
+            navigate("/login");
+            return;
+        }
 
         // Confirmação simples para evitar cliques acidentais
         if (!confirm("Tem certeza que deseja remover sua avaliação?")) return;
