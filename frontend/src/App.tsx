@@ -4,6 +4,7 @@ import { Home } from "./pages/Home";
 import { MyList } from "./pages/MyList";
 import { MovieDetails } from "./pages/MovieDetails";
 import { Footer } from "./components/Footer";
+import Login from "./pages/Login";
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/my-list" element={<MyList />} />
                 <Route path="/movie/:id" element={<MovieDetails />} />
+                <Route path="/login" element={<Login />} />
             </Routes>
             <Footer />
         </BrowserRouter>

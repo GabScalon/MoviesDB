@@ -182,7 +182,7 @@ def get_ratings(current_user):
 #  Exibe os detalhes do filme
 @app.route('/api/movie/<int:movie_id>', methods=['GET'])
 @token_required
-def get_movie_details(movie_id, current_user):
+def get_movie_details(current_user, movie_id):
     url_pt = f"https://api.themoviedb.org/3/movie/{movie_id}?language=pt-BR&append_to_response=credits"
     headers = {"Authorization": f"Bearer {TMDB_TOKEN}"}
     
@@ -257,7 +257,7 @@ def save_rating(current_user):
 #  Deleta a avaliação do filme no banco de dados
 @app.route('/api/rate/<int:movie_id>', methods=['DELETE'])
 @token_required
-def delete_rating(movie_id, current_user):
+def delete_rating(current_user, movie_id):
     rating = Rating.query.filter_by(movie_id=movie_id, user_id=current_user.id).first()
     
     if not rating:

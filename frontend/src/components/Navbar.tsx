@@ -1,8 +1,19 @@
-import { Link } from "react-router-dom";
-import { Video, Star } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Video, Star, LogIn, LogOut } from "lucide-react";
 import "./Navbar.css";
 
 export function Navbar() {
+    const navigate = useNavigate();
+
+    // Verifica se o token existe no localStorage
+    const isAuthenticated = !!localStorage.getItem("@MoviesDB:token");
+
+    const handleLogout = () => {
+        // Remove o token e manda o usuário para a home (ou tela de login)
+        localStorage.removeItem("@MoviesDB:token");
+        navigate("/login");
+    };
+
     return (
         <nav className="navbar">
             {/* Logo do Site */}
@@ -29,6 +40,24 @@ export function Navbar() {
                     <Star size={18} />
                     Minha Lista
                 </Link>
+            </div>
+            <div className="navbar-actions">
+                {/* Lógica de Autenticação */}
+                {isAuthenticated ? (
+                    <button
+                        onClick={handleLogout}
+                        className="btn-logout"
+                        title="Sair"
+                    >
+                        <LogOut size={20} />
+                        <span>Sair</span>
+                    </button>
+                ) : (
+                    <Link to="/login" className="btn-login" title="Entrar">
+                        <LogIn size={20} />
+                        <span>Entrar</span>
+                    </Link>
+                )}
             </div>
         </nav>
     );
