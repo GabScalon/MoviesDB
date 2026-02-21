@@ -311,7 +311,10 @@ def login():
             'user_id': user.id,
             'exp': datetime.now(timezone.utc) + timedelta(hours=24)
         }, app.config['SECRET_KEY'], algorithm="HS256")
-        return jsonify({'token': token})
+        return jsonify({
+            'token': token,
+            'username': user.username 
+        })
     
     return jsonify({'message': 'Credenciais inválidas!'}), 401
 

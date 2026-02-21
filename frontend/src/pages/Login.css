@@ -111,3 +111,15 @@
     color: #2ecc71;
     border: 1px solid #2ecc71;
 }
+
+.user-greeting {
+    color: #fff;
+    font-size: 0.9rem;
+    margin-right: 15px;
+    border-right: 1px solid #444;
+    padding-right: 15px;
+}
+
+.user-greeting strong {
+    color: #e50914;
+}

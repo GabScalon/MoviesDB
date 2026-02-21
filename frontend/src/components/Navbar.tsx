@@ -8,9 +8,12 @@ export function Navbar() {
     // Verifica se o token existe no localStorage
     const isAuthenticated = !!localStorage.getItem("@MoviesDB:token");
 
+    const username = localStorage.getItem("@MoviesDB:username");
+
     const handleLogout = () => {
         // Remove o token e manda o usuário para a home (ou tela de login)
         localStorage.removeItem("@MoviesDB:token");
+        localStorage.removeItem("@MoviesDB:username");
         navigate("/login");
     };
 
@@ -42,6 +45,11 @@ export function Navbar() {
                 </Link>
             </div>
             <div className="navbar-actions">
+                {isAuthenticated && (
+                    <span className="user-greeting">
+                        Olá, <strong>{username}</strong> !
+                    </span>
+                )}
                 {/* Lógica de Autenticação */}
                 {isAuthenticated ? (
                     <button

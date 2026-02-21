@@ -28,10 +28,11 @@ const Login: React.FC = () => {
                     username,
                     password,
                 });
-                const { token } = response.data;
+                const { token, username: loggedUsername } = response.data;
 
                 // Guardar o token no armazenamento do navegador
                 localStorage.setItem("@MoviesDB:token", token);
+                localStorage.setItem("@MoviesDB:username", loggedUsername);
 
                 // Redirecionar para a página inicial
                 navigate("/");
